@@ -1,42 +1,64 @@
-# `proxies-on-cloudflare`
+Notes:
+-------------
 
-Makes it easy to build [Cloudflare Workers](https://www.cloudflare.com/products/cloudflare-workers/), by providing high-level proxying primitives addressing common needs.
+`wrangler generate proxy https://github.com/cloudflare/worker-template-router`
 
-## Installation
 
-```
-$ yarn add proxies-on-cloudflare
-```
 
-## Features
+## Dynamic Redirects
 
-- Built-in proxies for
-    - Firebase (Hosting & CloudFunctions)
-    - Mixpanel
-- Simple routing via `quoi` (providing a familiar `express`-like API)
-- One-liner proxies (e.g: `proxy.to('https://upstream.com/')`)
-- Loadbalancing (`roundrobin`, `random`, `iphash`, ...)
-- Fallback and error handling
 
-## Example
+* add KV & keyvalue: 
 
-```js
-import { quoi, firebase, proxy }  from 'proxies-on-cloudflare';
-import { hosting as hostingConfig } from './firebase.json';
+  `wrangler kv:namespace create REDIRECTS`
+  
+* add REDIRECTS:
 
-// Init firebase proxy
-const fbase = new firebase('gitbook-staging', hostingConfig);
+  `wrangler kv:key put REDIRECTS test --namespace-id  77c697af949b48c0b898e9c020ef059c   
 
-// Route and listen
-const app = quoi();
-app.domain('app.gitbook.com').serve(fbase);
-app.domain('test.gitbook.com').serve(proxy.to('https://test.github.io/test/'));
-app.domain('storage.gitbook.com').serve(proxy.roundrobin(['https://server1', /* ... */ ]));
-app.listen();
-```
 
-You can see a more complex (real-world) example in `_examples/gitbook/`
 
-## Why ?
 
-We originally (GitBook) built `proxies-on-cloudflare` (previously named `firebase-on-cloudflare`) to fix connection issues we had between `Cloudflare` and `Fastly/Firebase Hosting` but have now extended it to solve broad routing needs.
+## Perform regex replacements and inject CSS/JavaScript with Cloudflare Workers 
+
+
+
+    addEventListener('fetch', event => {
+      event.passThroughOnException()
+      event.respondWith(handleRequest(event.request))
+    })
+
+    /**
+     * Fetch and log a given request object
+     * @param {Request} request
+     */
+    async function handleRequest(request) {
+      const response = await fetch(request)
+      var html = await response.text()
+
+      // Simple replacement regex
+      html = html.replace( /Source Phrase/g , 'Target Phrase')
+
+      // Inject scripts
+      const customScripts = '<style type="text/css">body{background:red}</style></body>'
+      html = html.replace( /<\/body>/ , customScripts)
+
+      // return modified response
+      return new Response(html, {
+        headers: response.headers
+      }) 
+    }
+
+
+
+
+# Links
+------------
+
+
+* [tvly-web](https://github.com/tvly/tvly-web)
+* [example-mailinglisthackers-worker.git](https://github.com/signalnerve/mailinglisthackers-worker.git)
+
+* [proxies-on-cloudflare](https://github.com/GitbookIO/proxies-on-cloudflare)
+* [wrangler-x86_64-unknown-linux-musl](https://workers.cloudflare.com/get-npm-wrangler-binary/1.17.0/x86_64-unknown-linux-musl)
+

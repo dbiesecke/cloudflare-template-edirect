@@ -1,13 +1,23 @@
 {
     "compilerOptions": {
-        "target": "esnext",
+        "target": "es6",
         "module": "commonjs",
         "resolveJsonModule": true,
         "declaration": true,
-        "outDir": "./dist",
+        "outDir": "./dist/",
+        "rootDirs": [
+            "./"
+        ],
+        "baseUrl": "./",
+        "paths": {
+            "proxies-on-cloudflare": [
+                "../../dist"
+            ],
+        },
         "strict": true
     },
     "include": [
-        "./src/"
+        "./main.ts",
+        "./firebase.json"
     ]
 }
